@@ -6,43 +6,72 @@ namespace CNN_For_Digits
 {
     public partial class Form1 : Form
     {
-        static readonly string trainImagesPath = @"C:\Projects\CNN For Digits\MNIST Dataset\OriginalFiles\train-images.idx3-ubyte";
-        static readonly string trainLabelsPath = @"C:\Projects\CNN For Digits\MNIST Dataset\OriginalFiles\train-labels.idx1-ubyte";
 
-        static readonly string testImagesPath = @"C:\Projects\CNN For Digits\MNIST Dataset\OriginalFiles\t10k-images.idx3-ubyte";
-        static readonly string testLabelsPath = @"C:\Projects\CNN For Digits\MNIST Dataset\OriginalFiles\t10k-labels.idx1-ubyte";
+        // Относительные пути к файлам MNIST относительно папки проекта
+        //private static readonly string TrainImagesPath = Path.Combine("MNIST Dataset", "train-images.idx3-ubyte");
+        //private static readonly string TrainLabelsPath = Path.Combine("MNIST Dataset", "train-labels.idx1-ubyte");
+        //private static readonly string TestImagesPath = Path.Combine("MNIST Dataset", "t10k-images.idx3-ubyte");
+        //private static readonly string TestLabelsPath = Path.Combine("MNIST Dataset", "t10k-labels.idx1-ubyte");
 
-        MnistRepo mnistRepo;
-        NeuralNetworkInterface NN;
-        int globalRndImg;
+        static readonly string TrainImagesPath = @"C:\Projects\CNN For Digits\MNIST Dataset\train-images.idx3-ubyte";
+        static readonly string TrainLabelsPath = @"C:\Projects\CNN For Digits\MNIST Dataset\train-labels.idx1-ubyte";
+
+        static readonly string TestImagesPath = @"C:\Projects\CNN For Digits\MNIST Dataset\t10k-images.idx3-ubyte";
+        static readonly string TestLabelsPath = @"C:\Projects\CNN For Digits\MNIST Dataset\t10k-labels.idx1-ubyte";
+
+        private MnistRepo _mnistRepo;
+        private NeuralNetworkInterface _neuralNetworkInterface;
+        private int _currentImageIndex;
 
         public Form1()
         {
             InitializeComponent();
-            mnistRepo = new(trainImagesPath, trainLabelsPath);
+            // Инициализация репозитория MNIST с обучающим набором данных
+            _mnistRepo = new MnistRepo(TrainImagesPath, TrainLabelsPath);
+            UpdateDatasetInfo();
         }
 
+        // Обновляет информацию о наборе данных в UI (количество изображений и меток)
+        private void UpdateDatasetInfo()
+        {
+            if (_mnistRepo == null)
+            {
+                MessageBox.Show("Репозиторий данных не инициализирован.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Images Count: {_mnistRepo.ImagesCount}");
+            sb.AppendLine($"Label Count: {_mnistRepo.LabelCount}");
+            label1.Text = sb.ToString();
+        }
+
+        // Обрабатывает нажатие кнопки для отображения случайного изображения
         private void Random_Img_button_Click(object sender, EventArgs e)
         {
-            globalRndImg = new Random().Next(mnistRepo.ImagesCount);
 
-            Bitmap bitMap = MakeBitmap(mnistRepo.Images[globalRndImg], 10);
-            pictureBox1.Image = bitMap;
+            if (_mnistRepo == null)
+            {
+                MessageBox.Show("Репозиторий данных не инициализирован.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
 
+            // Выбираем случайное изображение из набора данных
+            _currentImageIndex = new Random().Next(_mnistRepo.ImagesCount);
+            pictureBox1.Image = MakeBitmap(_mnistRepo.Images[_currentImageIndex], 10);
+
+            // Обновляем размеры изображения и метку
             width.Text = pictureBox1.Width.ToString();
             height.Text = pictureBox1.Height.ToString();
+            label2.Text = $"Текущая цифра: {_mnistRepo.Labels[_currentImageIndex]}";
 
-            label2.Text = $"Сurrent namber -> {mnistRepo.Labels[globalRndImg]}";
-
-            toolStripStatusLabel1.Text = NN.ModelPath;
+            // Обновляем путь к модели, если нейросеть инициализирована
+            toolStripStatusLabel1.Text = _neuralNetworkInterface?.ModelPath ?? "Модель не загружена";
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine($"Images Count: {mnistRepo.ImagesCount}");
-            sb.AppendLine($"Label Count: {mnistRepo.LabelCount}");
-            label1.Text = sb.ToString();
+            UpdateDatasetInfo();
         }
 
         public static Bitmap MakeBitmap(byte[] dImage, int mag)
@@ -73,26 +102,33 @@ namespace CNN_For_Digits
             return result;
         }
 
+        // Загружает тестовый набор данных
         private void тестовыйНаборToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mnistRepo = new(testImagesPath, testLabelsPath);
-            Form1_Load(sender, e);
+            _mnistRepo = new(TestImagesPath, TestLabelsPath);
+            UpdateDatasetInfo();
         }
 
+        // Загружает обучающий набор данных
         private void обучающийНаборToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mnistRepo = new(trainImagesPath, trainLabelsPath);
-            Form1_Load(sender, e);
+            _mnistRepo = new(TrainImagesPath, TrainLabelsPath);
+            UpdateDatasetInfo();
         }
 
+        // Выполняет предсказание нейросети для текущего изображения
         private void button2_Click(object sender, EventArgs e)
         {
+            if (_mnistRepo == null)
+            {
+                MessageBox.Show("Репозиторий данных не инициализирован.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            _neuralNetworkInterface ??= new NeuralNetworkInterface(new JsonNeuralNetworkSerializer());
 
-            NN ??= new NeuralNetworkInterface(new JsonNeuralNetworkSerializer());
-
-            label3.Text = NN.Predict(
-                mnistRepo.Images[globalRndImg].ConvertBytesToDoubles(),
-                mnistRepo.Labels[globalRndImg],
+            label3.Text = _neuralNetworkInterface.Predict(
+                _mnistRepo.Images[_currentImageIndex].ConvertBytesToDoubles(),
+                _mnistRepo.Labels[_currentImageIndex],
                 out var predicted
                 );
             textBox1.Text = predicted.ToString();
@@ -101,66 +137,75 @@ namespace CNN_For_Digits
             Random_Img_button_Click(sender, e);
         }
 
+        // Сохраняет модель нейросети в файл
         private void сохранитьМодельToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (NN == null)
+            if (_neuralNetworkInterface == null)
             {
-                MessageBox.Show("Нейросеть не инициализированна");
+                MessageBox.Show("Нейросеть не инициализирована.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
             else
             {
-                var saveFileDialog = new SaveFileDialog();
+                using SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Title = "Сохранить модель нейросети",
+                    FileName = "network_model.json",
+                    Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    FilterIndex = 1
+                };
 
-                // Настройки диалога
-                //saveFileDialog.Filter = "JSON files(*.json) | *.json | All files(*.*) | *.* ";
-                //saveFileDialog.FilterIndex = 1;
-                saveFileDialog.Title = "Сохранить файл как...";
-                saveFileDialog.FileName = @"network_model.json";
-                //saveFileDialog.CheckFileExists = true;
-                //saveFileDialog.CheckPathExists = true;
-
-                // Показать диалог и получить результат
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = saveFileDialog.FileName;
-                    MessageBox.Show($"Сохраненно по пути {NN.SaveModel(filePath.IsValidPath() ? filePath : null)}");
+                    MessageBox.Show($"Модель сохранена по пути: {_neuralNetworkInterface.SaveModel(filePath)}",
+                        "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }
 
+        // Загружает модель нейросети из файла
         private void загрузитьМодельToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // Создание диалога
-            var openFileDialog = new OpenFileDialog();
-
-            // Настройка параметров
-            openFileDialog.Title = "Выберите файл";
-            openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            //openFileDialog.Filter = "JSON files(*.json) | *.json | All files(*.*) | *.* ";
-            //openFileDialog.FilterIndex = 1;
-            openFileDialog.RestoreDirectory = true;
-            openFileDialog.CheckFileExists = true;
-            openFileDialog.CheckPathExists = true;
-            openFileDialog.Multiselect = false;
-
-            // Показ диалога
+            using OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Выберите файл модели",
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                FilterIndex = 1,
+                RestoreDirectory = true,
+                CheckFileExists = true,
+                CheckPathExists = true,
+                Multiselect = false
+            };
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                string selectedFilePath = openFileDialog.FileName;
-
-                NN = new NeuralNetworkInterface(new JsonNeuralNetworkSerializer(), selectedFilePath);
+                _neuralNetworkInterface = new NeuralNetworkInterface(new JsonNeuralNetworkSerializer(), modelPath: openFileDialog.FileName);
+                toolStripStatusLabel1.Text = _neuralNetworkInterface.ModelPath;
+                MessageBox.Show("Модель успешно загружена.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
         private void reluToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            NN.SetReLU();
+            if (_neuralNetworkInterface != null)
+            {
+                _neuralNetworkInterface.SetReLU();
+            }
         }
 
         private void sigmoidToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            NN.SetSigmoid();
+            if (_neuralNetworkInterface != null)
+            {
+                _neuralNetworkInterface.SetSigmoid();
+            }
+        }
+
+        private void обучениеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

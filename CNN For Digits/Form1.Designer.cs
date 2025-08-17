@@ -45,6 +45,9 @@
             функцияАктивацииToolStripMenuItem = new ToolStripMenuItem();
             reluToolStripMenuItem = new ToolStripMenuItem();
             sigmoidToolStripMenuItem = new ToolStripMenuItem();
+            режимToolStripMenuItem = new ToolStripMenuItem();
+            обучениеToolStripMenuItem = new ToolStripMenuItem();
+            предсказаниеToolStripMenuItem = new ToolStripMenuItem();
             groupBox2 = new GroupBox();
             label3 = new Label();
             button2 = new Button();
@@ -135,7 +138,7 @@
             // 
             // menuStrip1
             // 
-            menuStrip1.Items.AddRange(new ToolStripItem[] { файлыToolStripMenuItem, нейросетьToolStripMenuItem, функцияАктивацииToolStripMenuItem });
+            menuStrip1.Items.AddRange(new ToolStripItem[] { файлыToolStripMenuItem, нейросетьToolStripMenuItem, функцияАктивацииToolStripMenuItem, режимToolStripMenuItem });
             menuStrip1.Location = new Point(0, 0);
             menuStrip1.Name = "menuStrip1";
             menuStrip1.Size = new Size(1130, 24);
@@ -194,16 +197,36 @@
             // reluToolStripMenuItem
             // 
             reluToolStripMenuItem.Name = "reluToolStripMenuItem";
-            reluToolStripMenuItem.Size = new Size(180, 22);
+            reluToolStripMenuItem.Size = new Size(131, 22);
             reluToolStripMenuItem.Text = "LeakyReLU";
             reluToolStripMenuItem.Click += reluToolStripMenuItem_Click;
             // 
             // sigmoidToolStripMenuItem
             // 
             sigmoidToolStripMenuItem.Name = "sigmoidToolStripMenuItem";
-            sigmoidToolStripMenuItem.Size = new Size(180, 22);
+            sigmoidToolStripMenuItem.Size = new Size(131, 22);
             sigmoidToolStripMenuItem.Text = "Sigmoid";
             sigmoidToolStripMenuItem.Click += sigmoidToolStripMenuItem_Click;
+            // 
+            // режимToolStripMenuItem
+            // 
+            режимToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { обучениеToolStripMenuItem, предсказаниеToolStripMenuItem });
+            режимToolStripMenuItem.Name = "режимToolStripMenuItem";
+            режимToolStripMenuItem.Size = new Size(57, 20);
+            режимToolStripMenuItem.Text = "Режим";
+            // 
+            // обучениеToolStripMenuItem
+            // 
+            обучениеToolStripMenuItem.Name = "обучениеToolStripMenuItem";
+            обучениеToolStripMenuItem.Size = new Size(180, 22);
+            обучениеToolStripMenuItem.Text = "Обучение";
+            обучениеToolStripMenuItem.Click += обучениеToolStripMenuItem_Click;
+            // 
+            // предсказаниеToolStripMenuItem
+            // 
+            предсказаниеToolStripMenuItem.Name = "предсказаниеToolStripMenuItem";
+            предсказаниеToolStripMenuItem.Size = new Size(180, 22);
+            предсказаниеToolStripMenuItem.Text = "Предсказание";
             // 
             // groupBox2
             // 
@@ -212,7 +235,7 @@
             groupBox2.Controls.Add(textBox1);
             groupBox2.Location = new Point(401, 27);
             groupBox2.Name = "groupBox2";
-            groupBox2.Size = new Size(489, 527);
+            groupBox2.Size = new Size(428, 527);
             groupBox2.TabIndex = 6;
             groupBox2.TabStop = false;
             groupBox2.Text = "Neural Neetwork";
@@ -315,5 +338,8 @@
         private ToolStripMenuItem функцияАктивацииToolStripMenuItem;
         private ToolStripMenuItem reluToolStripMenuItem;
         private ToolStripMenuItem sigmoidToolStripMenuItem;
+        private ToolStripMenuItem режимToolStripMenuItem;
+        private ToolStripMenuItem обучениеToolStripMenuItem;
+        private ToolStripMenuItem предсказаниеToolStripMenuItem;
     }
 }
