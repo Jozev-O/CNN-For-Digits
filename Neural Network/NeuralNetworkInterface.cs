@@ -27,8 +27,11 @@ namespace Neural_Network
                 if (value <= 0 || value > 1000)
                     throw new ArgumentOutOfRangeException(nameof(value), "Train epochs must be between 1 and 1000");
                 _trainEpochs = value;
-            }
-        }
+                }
+                else
+                {
+                    TrainEpochs = value;
+                }
 
         /// <summary>
         /// Инициализирует интерфейс для работы с нейронной сетью.
@@ -54,21 +57,12 @@ namespace Neural_Network
             _normalizationFunction = new SoftmaxNormalization();
             InitializeNetwork();
         }
-        //public NeuralNetworkInterface(INeuralNetworkSerializer serializer)
-        //{
-        //    _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-        //    InitializeNetwork();
-        //}
-        //public NeuralNetworkInterface(INeuralNetworkSerializer serializer, string filepath)
-        //{
-        //    ModelPath = filepath;
-        //    _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-        //    InitializeNetwork();
-        //}
-
-        /// <summary>
-        /// Устанавливает LeakyReLU как функцию активации и пересоздаёт сеть.
-        /// </summary>
+        public NeuralNetworkInterface(INeuralNetworkSerializer serializer, string filepath)
+        {
+            ModelPath = filepath;
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            InitializeNetwork();
+        }
         public void SetReLU()
         {
             _activationFunction = new LeakyReLU();
@@ -121,7 +115,13 @@ namespace Neural_Network
             var oneHotTarget = CreateOneHotVector(correctLabel, _outputSize);
             _network.Train(input, oneHotTarget);
             // Сохраняем модель после обучения, чтобы не потерять прогресс
-            _serializer.Save(_network, ModelPath);
+                _serializer.Save(_network, ModelPath);
+            }
+            else
+            {
+                throw new Exception("Неверная метка");
+            }
+
         }
 
         /// <summary>
@@ -144,10 +144,12 @@ namespace Neural_Network
             var sb = new StringBuilder();
             var output = _network.Predict(input);
 
+            var output = _network.Predict(input);
             predictedLabel = MathUtils.ArgMax(output);
 
             // Формируем отчёт: предсказание и выходы сети
             sb.AppendLine($"Предсказание: {predictedLabel} | Ожидаемая метка: {correctLabel}");
+
             sb.AppendLine($"Выходы сети: [{string.Join(", ", output.Select(o => o.ToString("0.00")))}]");
 
             var countOfErr = predictions.FindAll(e => e == false);
@@ -167,8 +169,11 @@ namespace Neural_Network
             if (_network == null)
                 throw new InvalidOperationException("Network is not initialized");
             if (filepath != null)
+            {
                 ModelPath = filepath;
+            }
             return _serializer.Save(_network, ModelPath);
+
         }
         /// <summary>
         /// Создаёт one-hot вектор для целевой метки.

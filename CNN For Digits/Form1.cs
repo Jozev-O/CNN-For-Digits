@@ -6,6 +6,8 @@ namespace CNN_For_Digits
 {
     public partial class Form1 : Form
     {
+        static readonly string trainImagesPath = @"C:\Projects\CNN For Digits\MNIST Dataset\OriginalFiles\train-images.idx3-ubyte";
+        static readonly string trainLabelsPath = @"C:\Projects\CNN For Digits\MNIST Dataset\OriginalFiles\train-labels.idx1-ubyte";
 
         // Относительные пути к файлам MNIST относительно папки проекта
         //private static readonly string TrainImagesPath = Path.Combine("MNIST Dataset", "train-images.idx3-ubyte");
@@ -49,6 +51,7 @@ namespace CNN_For_Digits
         // Обрабатывает нажатие кнопки для отображения случайного изображения
         private void Random_Img_button_Click(object sender, EventArgs e)
         {
+            globalRndImg = new Random().Next(mnistRepo.ImagesCount);
 
             if (_mnistRepo == null)
             {
@@ -155,6 +158,7 @@ namespace CNN_For_Digits
                     FilterIndex = 1
                 };
 
+                // Показать диалог и получить результат
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = saveFileDialog.FileName;

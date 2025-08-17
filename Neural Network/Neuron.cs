@@ -24,6 +24,7 @@ namespace Neural_Network
                 throw new ArgumentException("Input count must be positive", nameof(inputCount));
 
             _activationFunction = activationFunction ?? throw new ArgumentNullException(nameof(activationFunction));
+            random ??= new Random();
 
             // Инициализируем веса случайно в [-1, 1],
             // чтобы избежать симметрии: если все веса одинаковые,
@@ -120,3 +121,12 @@ namespace Neural_Network
         }
     }
 }
+// Обновление весов (используется при обучении)
+//public void UpdateWeights(double[] inputs, double learningRate)
+//{
+//    for (int i = 0; i < Weights.Length; i++)
+//    {
+//        Weights[i] += learningRate * Delta * inputs[i];
+//    }
+//    Bias += learningRate * Delta;
+//}

@@ -37,6 +37,7 @@ namespace Neural_Network.JsonNeuralNetworkSerializer
 
                 string json = JsonConvert.SerializeObject(serializedModel, Formatting.Indented);
                 File.WriteAllText(filePath, json);
+                Console.WriteLine($"Модель успешно сохранена в {filePath}");
                 return filePath;
             }
             catch (Exception ex)
@@ -87,6 +88,7 @@ namespace Neural_Network.JsonNeuralNetworkSerializer
                     activationFunction,
                     normalizationFunction);
 
+                Console.WriteLine($"Модель успешно загружена из {filePath}");
                 return network;
             }
             catch (Exception ex)
@@ -111,6 +113,7 @@ namespace Neural_Network.JsonNeuralNetworkSerializer
             Random? random = null)
         {
             network = null;
+
             try
             {
                 network = Load(filePath, activationFunction, normalizationFunction);
@@ -118,6 +121,7 @@ namespace Neural_Network.JsonNeuralNetworkSerializer
             }
             catch
             {
+                Console.WriteLine($"Ошибка загрузки: {ex.Message}");
                 return false;
             }
         }

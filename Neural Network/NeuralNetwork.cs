@@ -1,4 +1,5 @@
 ﻿using Neural_Network.Interfaces;
+using Neural_Network.NormalizationFuncs;
 
 namespace Neural_Network
 {

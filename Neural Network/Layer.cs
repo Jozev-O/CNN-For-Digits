@@ -130,13 +130,14 @@ namespace Neural_Network
                     // Суммируем взвешенные дельты от следующего слоя, чтобы "пропагандировать" ошибку назад
                     error += nextLayer.Neurons[j].Weights[i] * outputLayerErrors[j];
                 }
+                errors[i] = error;
 
                 var neuron = Neurons[i];
                 // Дельта = propagated error * производная, чтобы скорректировать вклад этого нейрона в общую ошибку
                 deltas[i] = error * neuron.ComputeDerivative(neuron.WeightedSum);
                 // Делегируем обновление, чтобы нейрон сам управлял своими весами
                 neuron.UpdateWeights(deltas[i], learningRate);
-            }
+        }
 
             return deltas;
         }
